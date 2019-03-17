@@ -3,6 +3,7 @@
  * This list is hold by the fpinjava-parent module
  */
 include 'fpinjava-common',
+        'funk',
         'fpinjava-introduction',
         'fpinjava-usingfunctions-exercises',
         'fpinjava-usingfunctions-solutions',
@@ -30,3 +31,4 @@ include 'fpinjava-common',
         'fpinjava-io-solutions',
         'fpinjava-actors',
         'fpinjava-applications'
+
