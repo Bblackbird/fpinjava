@@ -1,29 +1,30 @@
 package com.funk.actors;
 
-
 import com.funk.common.Result;
 
-public interface Actor<T> {
+import java.util.concurrent.CompletableFuture;
 
-  static <T> Result<Actor<T>> noSender() {
+public interface Actor<T, R> {
+
+  static <T, R> Result<Actor<T, R>> noSender() {
     return Result.empty();
   }
 
-  Result<Actor<T>> self();
+  default Result<Actor<T, R>> self() {return Result.success(this);}
 
-  ActorContext<T> getContext();
+  ActorContext<T, R> getContext();
 
-  default void tell(T message) {
-    tell(message, self());
+  default CompletableFuture<Result<R>> tell(T message) {
+    return tell(message, self());
   }
 
-  void tell(T message, Result<Actor<T>> sender);
+  CompletableFuture<Result<R>> tell(T message, Result<Actor<T, R>> sender);
 
   void shutdown();
 
-  default void tell(T message, Actor<T> sender) {
-    tell(message, Result.of(sender));
+  default CompletableFuture<Result<R>> tell(T message, Actor<T, R> sender) {
+    return tell(message, Result.of(sender));
   }
 
-  enum Type {SERIAL, PARALLEL} // <7>
+  enum Type {DIRECT, SERIAL, PARALLEL, STRIPED}
 }

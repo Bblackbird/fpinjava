@@ -3,7 +3,7 @@ package com.funk.actors;
 
 import com.funk.common.Result;
 
-public interface MessageProcessor<T> {
+public interface MessageProcessor<T, R> {
 
-  void process(T t, Result<Actor<T>> sender);
+  R process(T t, Result<Actor<T, R>> sender);
 }

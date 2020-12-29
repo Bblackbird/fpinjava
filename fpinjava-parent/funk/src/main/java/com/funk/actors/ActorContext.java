@@ -1,9 +1,9 @@
 package com.funk.actors;
 
 
-public interface ActorContext<T> {
+public interface ActorContext<T, R> {
 
-  void become(MessageProcessor<T> behavior);
+  void become(MessageProcessor<T, R> behavior);
 
-  MessageProcessor<T> getBehavior();
+  MessageProcessor<T, R> getBehavior();
 }

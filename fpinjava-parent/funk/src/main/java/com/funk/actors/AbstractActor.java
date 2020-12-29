@@ -1,48 +1,48 @@
 package com.funk.actors;
 
-
 import com.funk.common.Result;
+import com.funk.common.Tuple;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
 
+public abstract class AbstractActor<T, R> implements Actor<T, R> {
 
-public abstract class AbstractActor<T> implements Actor<T> {
-
-  private final ActorContext<T> context;
+  private final ActorContext<T, R> context;
   protected final String id;
   private final ExecutorService executor;
 
-  public AbstractActor(String id, Type type) {
+  public AbstractActor(String id, Type type, String threadNamePrefix) {
     super();
     this.id = id;
     this.executor = type == Type.SERIAL
-        ? Executors.newSingleThreadExecutor(new DaemonThreadFactory())
-        : Executors.newCachedThreadPool(new DaemonThreadFactory());
+        ? Executors.newSingleThreadExecutor(new DaemonThreadFactory(threadNamePrefix))
+        : Executors.newCachedThreadPool(new DaemonThreadFactory(threadNamePrefix));
 
-    this.context = new ActorContext<T>() {
-      private MessageProcessor<T> behavior =
+    this.context = new ActorContext<T, R>() {
+      private MessageProcessor<T, R> behavior =
           AbstractActor.this::onReceive;
       @Override
-      public synchronized void become(MessageProcessor<T> behavior) {
+      public synchronized void become(MessageProcessor<T, R> behavior) {
         this.behavior = behavior;
       }
 
       @Override
-      public MessageProcessor<T> getBehavior() {
+      public MessageProcessor<T, R> getBehavior() {
         return behavior;
       }
     };
   }
 
-  public abstract void onReceive(T message, Result<Actor<T>> sender);
+  public abstract R onReceive(T message, Result<Actor<T, R>> sender);
 
-  public Result<Actor<T>> self() {
+/*  public Result<Actor<T, R>> self() {
     return Result.success(this);
-  }
+  }*/
 
-  public ActorContext<T> getContext() {
+  public ActorContext<T, R> getContext() {
     return this.context;
   }
 
@@ -51,10 +51,13 @@ public abstract class AbstractActor<T> implements Actor<T> {
     this.executor.shutdown();
   }
 
-  public synchronized void tell(final T message, Result<Actor<T>> sender) {
-    executor.execute(() -> {
+  private R process(Tuple<T, Result<Actor<T,R>>> tuple) { return context.getBehavior().process(tuple._1, tuple._2);}
+
+  public synchronized CompletableFuture<Result<R>> tell(final T message, Result<Actor<T,R>> sender) {
+    return CompletableFuture.supplyAsync(() -> {
       try {
-        context.getBehavior().process(message, sender);
+        //context.getBehavior().process(message, sender);
+        return Result.success(context.getBehavior().process(message, sender));
       } catch (RejectedExecutionException e) {
         /*
          * This is probably normal and means all pending tasks
@@ -63,6 +66,7 @@ public abstract class AbstractActor<T> implements Actor<T> {
       } catch (Exception e) {
         throw new RuntimeException(e);
       }
-    });
+      return null;
+    }, executor).exceptionally(ex -> Result.failure(new RuntimeException(ex)));
   }
 }
