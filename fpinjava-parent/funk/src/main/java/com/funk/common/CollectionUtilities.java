@@ -128,4 +128,10 @@ public class CollectionUtilities {
     return result;
   }
 
+  public static <K, V> Map<K, V> toMap(java.util.Map<K, V> javaMap) {
+    Map<K, V> map = new Map<>();
+    javaMap.entrySet().forEach(e -> map.put(e.getKey(), e.getValue()));
+    return map;
+  }
+
 }

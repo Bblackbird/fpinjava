@@ -97,6 +97,40 @@ public abstract class List<A> {
     return Result.success(list.reverse());
   }
 
+  public static <A, B> Result<Map<A, B>> mergeToMap(List<A> listA, List<B> listB) {
+    if (listA.length() != listB.length()) {
+      return Result.failure("Can't merge lists of different lengths.");
+    }
+
+    Map<A, B> map = new Map<>();
+    List<A> workListT = listA;
+    List<B> workListU = listB;
+
+    while (!workListT.isEmpty()) {
+      map.put(workListT.head(), workListU.head());
+      workListT = workListT.tail();
+      workListU = workListU.tail();
+    }
+    return Result.success(map);
+  }
+
+  public static <A, B> Result<Map<A, List<B>>> mergeToMapAllowingDupKey(List<A> listA, List<B> listB) {
+    if (listA.length() != listB.length()) {
+      return Result.failure("Can't merge lists of different lengths.");
+    }
+
+    Map<A, List<B>> map = new Map<>();
+    List<A> workListT = listA;
+    List<B> workListU = listB;
+
+    while (!workListT.isEmpty()) {
+      map.put(workListT.head(), List.cons(workListU.head(), map.get(workListT.head()).getOrElse(NIL)));
+      workListT = workListT.tail();
+      workListU = workListU.tail();
+    }
+    return Result.success(map);
+  }
+
   public Result<A> lastOption() {
     return foldLeft(Result.empty(), x -> Result::success);
   }

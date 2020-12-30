@@ -1,6 +1,7 @@
 package com.funk.common;
 
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Consumer;
@@ -45,24 +46,28 @@ public class Map<T, U> {
     return put(e);
   }
 
-  public Map<T, U> removeKey(T t) {
-    this.map.remove(t);
-    return this;
-  }
+    public Map<T, U> removeKey(T t) {
+        this.map.remove(t);
+        return this;
+    }
 
-  public List<T> keys() {
-    return List.fromCollection(this.map.keySet());
-  }
+    public List<T> keys() {
+        return List.fromCollection(this.map.keySet());
+    }
 
-  public List<U> values() {
-    return List.fromCollection(this.map.values());
-  }
+    public Set<T> keySet() {
+        return this.map.keySet();
+    }
 
-  public int size() {
-    return this.map.size();
-  }
+    public List<U> values() {
+        return List.fromCollection(this.map.values());
+    }
 
-  public void foreach(Consumer<Tuple<T, U>> c) {
+    public int size() {
+        return this.map.size();
+    }
+
+    public void foreach(Consumer<Tuple<T, U>> c) {
     this.map.entrySet().forEach(e -> c.accept(new Tuple<>(e.getKey(), e.getValue())));
   }
 
